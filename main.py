@@ -7,20 +7,42 @@ browser = webdriver.Chrome()
 domain = "https://github.com"
 browser.get(domain+"/orgs/apache/repositories")
 page_Source = browser.page_source
+browser.close()
 soup = BeautifulSoup(page_Source, 'lxml')
 
 Data = []
 
 def mystr( str ):
     return str.replace(' ', '').replace('\n', '').replace('\u2026', '')
-
+    
 for it in soup.find_all(itemprop="name codeRepository"):
     Dic={}
     newbrowser = webdriver.Chrome()
     newdomain = domain + it.attrs['href']
     newbrowser.get(newdomain)
     newpage_Source = newbrowser.page_source
+    newbrowser.close()
     newsoup = BeautifulSoup(newpage_Source, "lxml")
+    I = []
+    if newsoup.find(id="issues-tab") != None:
+        issuebrowser = webdriver.Chrome()
+        issuedomain = newdomain + "/issues"
+        issuebrowser.get(issuedomain)
+        issuepage_Source = issuebrowser.page_source
+        issuebrowser.close()
+        issuesoup = BeautifulSoup(issuepage_Source, "lxml")
+        cnt = 0
+        for i in issuesoup.find_all(attrs={"data-hovercard-type" : "issue"}):
+            browser4 = webdriver.Chrome()
+            domain4 = domain + i.attrs['href']
+            browser4.get(domain4)
+            page_Source4 = browser4.page_source
+            browser4.close()
+            I.append({'Title' : mystr(i.find(class_="js-issue-title markdown-title").text)})
+            I[cnt]['Detail' : mystr(i.find(class_="d-block comment-body markdown-body  js-comment-body").text)]
+            cnt = cnt + 1
+            if cnt==5 :
+                break
     Dic["Name"] = mystr(newsoup.find(itemprop="name").contents[1].text)
     Dic["Description"] = mystr(newsoup.find(class_="f4 mt-3").text)
     Dic["License"] = ""
@@ -34,6 +56,7 @@ for it in soup.find_all(itemprop="name codeRepository"):
     nextdomain = newdomain + '/commits'
     nextbrowser.get(nextdomain)
     nextpage_Source = nextbrowser.page_source
+    nextbrowser.close()
     nextsoup = BeautifulSoup(nextpage_Source, "lxml")
     C = []
     cnt = 0
@@ -56,11 +79,10 @@ for it in soup.find_all(itemprop="name codeRepository"):
         if cnt == 5 :
             break
     Dic["Commit"] = C
+    Dic["Issue"] = I
     Data.append(Dic)
-    nextbrowser.close()
-    newbrowser.close()
+    break
 
 Output = json.dumps(Data, indent=1)
 fo = open('output.json', 'w')
 fo.write(Output)
-browser.close()
