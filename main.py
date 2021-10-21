@@ -1,6 +1,7 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import re
+import json
 
 browser = webdriver.Chrome()
 domain = "https://github.com"
@@ -8,51 +9,58 @@ browser.get(domain+"/orgs/apache/repositories")
 page_Source = browser.page_source
 soup = BeautifulSoup(page_Source, 'lxml')
 
-class Repo:
-    name = ""
-    description = ""
-    license = ""
-    language = []
-    commit = []
-    issue = []
+Data = []
 
-    def __init__ (self, N, D, Li, Lan, C, I):
-        name = N
-        description = D
-        license = Li
-        language = Lan
-        commit = C
-        issue = I
+def mystr( str ):
+    return str.replace(' ', '').replace('\n', '').replace('\u2026', '')
 
 for it in soup.find_all(itemprop="name codeRepository"):
+    Dic={}
     newbrowser = webdriver.Chrome()
     newdomain = domain + it.attrs['href']
     newbrowser.get(newdomain)
     newpage_Source = newbrowser.page_source
     newsoup = BeautifulSoup(newpage_Source, "lxml")
-    D = newsoup.find(class_="f4 mt-3").text
-    N = newsoup.find(itemprop="name").contents[1].text
-    Li = newsoup.find(attrs={"href" : re.compile('LICENSE$')}).text
-    Lan=[]
+    Dic["Name"] = mystr(newsoup.find(itemprop="name").contents[1].text)
+    Dic["Description"] = mystr(newsoup.find(class_="f4 mt-3").text)
+    Dic["License"] = ""
+    if newsoup.find(attrs={"href" : re.compile('LICENSE$')}) != None:
+        Dic["License"] =mystr(newsoup.find(attrs={"href" : re.compile('LICENSE$')}).text)
+    Lan={}
     for i in newsoup.find_all(class_="color-fg-default text-bold mr-1"):
-        Lan.append([i.text, i.find_next_sibling().text])
-    
+        Lan[mystr(i.text)] = mystr(i.find_next_sibling().text)
+    Dic["Language"] = Lan
     nextbrowser = webdriver.Chrome()
     nextdomain = newdomain + '/commits'
     nextbrowser.get(nextdomain)
     nextpage_Source = nextbrowser.page_source
     nextsoup = BeautifulSoup(nextpage_Source, "lxml")
+    C = []
+    cnt = 0
     for i in nextsoup.find_all(class_="mb-1"):
-        print(i.text)
-        for j in i.find_next_sibling().find_all(class_="commit-author user-mention"):
-            print(j)
-        break
+        C.append({"commit message" : mystr(i.text)})
+        cnt = cnt + 1
+        if cnt == 5 :
+            break
+    cnt = 0
+    for i in nextsoup.find_all(class_="f6 color-text-secondary min-width-0"):
+        for j in i.find_all(attrs={'href' : re.compile('/apache')}):
+            C[cnt]["author"] = mystr(j.text)
+        cnt = cnt + 1
+        if cnt == 5 :
+            break
+    cnt = 0
+    for i in nextsoup.find_all(class_="text-mono f6 btn btn-outline BtnGroup-item"):
+        C[cnt]["hash"] = mystr(i.text)
+        cnt = cnt + 1
+        if cnt == 5 :
+            break
+    Dic["Commit"] = C
+    Data.append(Dic)
     nextbrowser.close()
-    #print (D)
-    #print (N)
-    #print (Li)
-    #print (Lan)
-    
     newbrowser.close()
-    break
+
+Output = json.dumps(Data, indent=1)
+fo = open('output.json', 'w')
+fo.write(Output)
 browser.close()
