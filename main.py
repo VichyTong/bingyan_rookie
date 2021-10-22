@@ -3,6 +3,27 @@ from bs4 import BeautifulSoup
 import re
 import json
 
+class TestTest():
+  def setup_method(self):
+    self.driver = webdriver.Chrome()
+    self.vars = {}
+  
+  def teardown_method(self):
+    self.driver.quit()
+  
+  def test_test(self):
+    self.driver.get("https://github.com/orgs/apache/repositories")
+    soup = BeautifulSoup(self.driver.page_source, 'lxml')
+    self.driver.find_element(By.LINK_TEXT, "Sign in").click()
+    self.driver.find_element(By.ID, "login_field").send_keys("tastmytask")
+    self.driver.find_element(By.ID, "password").send_keys("Tongweixi2003")
+    self.driver.find_element(By.ID, "js-pjax-container").click()
+    self.driver.find_element(By.NAME, "commit").click()
+    for it in soup.find_all(itemprop="name codeRepository"):
+      self.driver.get("https://github.com"+it.attrs['href'])
+      self.driver.find_element(By.CSS_SELECTOR, ".unstarred > .btn-with-count").click()
+    self.driver.close()
+
 browser = webdriver.Chrome()
 domain = "https://github.com"
 browser.get(domain+"/orgs/apache/repositories")
@@ -86,3 +107,8 @@ for it in soup.find_all(itemprop="name codeRepository"):
 Output = json.dumps(Data, indent=1)
 fo = open('output.json', 'w')
 fo.write(Output)
+
+Clickstar = TestTest()
+Clickstar.setup_method()
+Clickstar.test_test()
+Clickstar.teardown_method()
