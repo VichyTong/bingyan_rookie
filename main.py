@@ -13,7 +13,7 @@ soup = BeautifulSoup(page_Source, 'lxml')
 Data = []
 
 def mystr( str ):
-    return str.replace(' ', '').replace('\n', '').replace('\u2026', '')
+    return str.replace('\n', '').replace('\u2026', '')
     
 for it in soup.find_all(itemprop="name codeRepository"):
     Dic={}
@@ -38,8 +38,9 @@ for it in soup.find_all(itemprop="name codeRepository"):
             browser4.get(domain4)
             page_Source4 = browser4.page_source
             browser4.close()
-            I.append({'Title' : mystr(i.find(class_="js-issue-title markdown-title").text)})
-            I[cnt]['Detail' : mystr(i.find(class_="d-block comment-body markdown-body  js-comment-body").text)]
+            soup4 = BeautifulSoup(page_Source4, "lxml")
+            I.append({'Title' : mystr(soup4.find(class_="js-issue-title markdown-title").text)})
+            I[cnt]['Detail'] = mystr(soup4.find(name = 'td').p.text)
             cnt = cnt + 1
             if cnt==5 :
                 break
@@ -81,7 +82,6 @@ for it in soup.find_all(itemprop="name codeRepository"):
     Dic["Commit"] = C
     Dic["Issue"] = I
     Data.append(Dic)
-    break
 
 Output = json.dumps(Data, indent=1)
 fo = open('output.json', 'w')
