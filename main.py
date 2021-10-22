@@ -1,7 +1,13 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import re
 import json
+import time
+
+def mystr( str ):
+    return str.replace('\n', '').replace('\u2026', '')
 
 class TestTest():
   def setup_method(self):
@@ -17,11 +23,40 @@ class TestTest():
     self.driver.find_element(By.LINK_TEXT, "Sign in").click()
     self.driver.find_element(By.ID, "login_field").send_keys("tastmytask")
     self.driver.find_element(By.ID, "password").send_keys("Tongweixi2003")
-    self.driver.find_element(By.ID, "js-pjax-container").click()
     self.driver.find_element(By.NAME, "commit").click()
     for it in soup.find_all(itemprop="name codeRepository"):
       self.driver.get("https://github.com"+it.attrs['href'])
       self.driver.find_element(By.CSS_SELECTOR, ".unstarred > .btn-with-count").click()
+    self.driver.close()
+
+class TestA():
+  def setup_method(self):
+    self.driver = webdriver.Chrome()
+    self.vars = {}
+  
+  def teardown_method(self):
+    self.driver.quit()
+  
+  def test_a(self):
+    self.driver.get("https://github.com")
+    self.driver.find_element(By.LINK_TEXT, "Sign in").click()
+    self.driver.find_element(By.ID, "login_field").send_keys("tastmytask")
+    self.driver.find_element(By.ID, "password").send_keys("Tongweixi2003")
+    self.driver.find_element(By.NAME, "commit").click()
+    self.driver.find_element(By.LINK_TEXT, "Issues").click()
+    soup = BeautifulSoup(self.driver.page_source, 'lxml')
+    for i in soup.find_all(class_ = "Link--primary v-align-middle no-underline h4 js-navigation-open markdown-title"):
+        self.driver.get("https://github.com" + i.attrs['href'])
+        newsoup = BeautifulSoup(self.driver.page_source, 'lxml')
+        print(mystr(newsoup.find(class_="js-issue-labels d-flex flex-wrap").text))
+        print(re.search(r'None yet', mystr(newsoup.find(class_="js-issue-labels d-flex flex-wrap").text)))
+        if re.search(r'None yet', mystr(newsoup.find(class_="js-issue-labels d-flex flex-wrap").text))!= None:
+            self.driver.find_element(By.CSS_SELECTOR, "#labels-select-menu > .text-bold").click()
+            self.driver.find_element(By.ID, "label-filter-field").send_keys("bug")
+            time.sleep(3)
+            self.driver.find_element(By.ID, "label-filter-field").send_keys(Keys.ENTER)
+            self.driver.find_element(By.CSS_SELECTOR, "#labels-select-menu > .text-bold").click()
+
     self.driver.close()
 
 browser = webdriver.Chrome()
@@ -32,9 +67,6 @@ browser.close()
 soup = BeautifulSoup(page_Source, 'lxml')
 
 Data = []
-
-def mystr( str ):
-    return str.replace('\n', '').replace('\u2026', '')
     
 for it in soup.find_all(itemprop="name codeRepository"):
     Dic={}
@@ -112,3 +144,8 @@ Clickstar = TestTest()
 Clickstar.setup_method()
 Clickstar.test_test()
 Clickstar.teardown_method()
+
+Addlabel = TestA()
+Addlabel.setup_method
+Addlabel.test_a()
+Addlabel.teardown_method()
