@@ -55,5 +55,5 @@ for it in domain_list:
     break
 
 Output = json.dumps(Data, indent =1)
-fo = open('Level2.json', 'w')
+fo = open('Level2-1.json', 'w')
 fo.write(Output)
