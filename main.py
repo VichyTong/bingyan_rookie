@@ -7,7 +7,7 @@ import json
 import time
 
 def mystr( str ):
-    return str.replace('\n', '').replace('\u2026', '')
+    return str.replace('\n', '').replace('\u2026', '').strip()
 
 class TestTest():
   def setup_method(self):
