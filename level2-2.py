@@ -53,4 +53,24 @@ def Addstar():
         response = session.post(url, headers = user_headers, data = Data)
         print(response)
 
+def AddLabel():
+    response = session.get("https://github.com/issues", headers=user_headers)
+    html = etree.HTML(response.text)
+    domain_list = html.xpath('//a[@class="Link--primary v-align-middle no-underline h4 js-navigation-open markdown-title"]/@href')
+    for it in domain_list:
+        domain = "https://github.com" + it + '/show_partial?partial=issues%2Fsidebar%2Flabels_menu_content'
+        Nr = session.get(domain, headers=user_headers)
+        Nhtml = etree.HTML(Nr.text)
+        token = Nhtml.xpath('//input[@name="authenticity_token"]/@value')[0]
+        num = Nhtml.xpath('//input[@data-label-name="bug"]/@value')[0]
+        Data = {
+            '_method' : 'put',
+            'authenticity_token' : token,
+            'issue[labels][]' : num
+        } 
+        url = "https://github.com" + it + '/labels'
+        response = session.post(url, headers = user_headers, data = Data)
+        print(Data)
+        print(response)
 Addstar()
+AddLabel()
