@@ -21,8 +21,8 @@ class TestTest():
     self.driver.get("https://github.com/orgs/apache/repositories")
     soup = BeautifulSoup(self.driver.page_source, 'lxml')
     self.driver.find_element(By.LINK_TEXT, "Sign in").click()
-    self.driver.find_element(By.ID, "login_field").send_keys("tastmytask")
-    self.driver.find_element(By.ID, "password").send_keys("Tongweixi2003")
+    self.driver.find_element(By.ID, "login_field").send_keys("******")
+    self.driver.find_element(By.ID, "password").send_keys("******")
     self.driver.find_element(By.NAME, "commit").click()
     for it in soup.find_all(itemprop="name codeRepository"):
       self.driver.get("https://github.com"+it.attrs['href'])
