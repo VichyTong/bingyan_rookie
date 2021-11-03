@@ -40,8 +40,8 @@ class TestA():
   def test_a(self):
     self.driver.get("https://github.com")
     self.driver.find_element(By.LINK_TEXT, "Sign in").click()
-    self.driver.find_element(By.ID, "login_field").send_keys("tastmytask")
-    self.driver.find_element(By.ID, "password").send_keys("Tongweixi2003")
+    self.driver.find_element(By.ID, "login_field").send_keys("*****")
+    self.driver.find_element(By.ID, "password").send_keys("******")
     self.driver.find_element(By.NAME, "commit").click()
     self.driver.find_element(By.LINK_TEXT, "Issues").click()
     soup = BeautifulSoup(self.driver.page_source, 'lxml')
